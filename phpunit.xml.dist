@@ -1,0 +1,17 @@
+<phpunit>
+    <logging>
+        <log type="coverage-text" target="coverage.txt"/>
+    </logging>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src/</directory>
+        </whitelist>
+    </filter>
+
+    <testsuites>
+        <testsuite name="PHPFileParser">
+            <file>tests/PHPFileParserTest.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>
