@@ -1,6 +1,7 @@
 <phpunit>
     <logging>
         <log type="coverage-text" target="coverage.txt"/>
+        <log type="coverage-html" target="coverage"/>
     </logging>
 
     <filter>

@@ -75,31 +75,31 @@ class PHPFileParser
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                $call = $this->convertChildNamespaces($call);
+                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseStaticCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                $call = $this->convertChildNamespaces($call);
+                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseExtendsCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                $call = $this->convertChildNamespaces($call);
+                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseImplementsCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                $call = $this->convertChildNamespaces($call);
+                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseCatchCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                $call = $this->convertChildNamespaces($call);
+                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             }
             //TODO: parse function arguments
@@ -145,84 +145,6 @@ class PHPFileParser
                 }, $var);
             }
         }
-    }
-
-    private function convertAddedNamespace($call)
-    {
-        if ((strpos($call, '\\') === 0 && $this->namespace == null)
-            || (strpos($call, '\\') === false && $this->namespace != null)
-        ) {
-            if ($this->namespace == null) {
-                $call = substr($call, 1, strlen($call));
-            }
-            //$this->namespaces[] = ['use' => $call, 'alias' => ''];
-            return $call;
-        }
-        return $call;
-    }
-
-    private function convertNamespaceAliases($call)
-    {
-        foreach ($this->namespaces as $namespace) {
-            if ($namespace['alias'] != '' && strpos($call, $namespace['alias']) === 0) {
-                $call = str_replace($namespace['alias'], $namespace['use'], $call);
-            }
-        }
-        return $call;
-    }
-
-    private function convertCallToNamespace($call)
-    {
-        if (strpos($call, '\\') === false) {
-            foreach ($this->namespaces as $namespace) {
-                if ($namespace['alias'] == '') {
-                    $length = strlen($namespace['use']) - strlen($call) - 1;
-                    if ($length > 0) {
-                        if (strpos($namespace['use'], '\\' . $call, $length) == $length) {
-                            $call = $namespace['use'];
-                        }
-                    }
-                }
-            }
-        }
-        return $call;
-    }
-
-    private function parseCatchCall($tokens, $index)
-    {
-        $call = '';
-        if ($tokens[$index][0] == T_CATCH) {
-            $index++;
-            do {
-                if (!is_array($tokens[$index])) {
-                    $tokens[$index][1] = $tokens[$index];
-                }
-                if (strpos($tokens[$index][1], '$') !== false) {
-                    break;
-                }
-                if ($tokens[$index][1] != '(') {
-                    $call .= $tokens[$index][1];
-                }
-                $index++;
-            } while ($tokens[$index] == '(' || in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
-            return trim($call);
-        }
-        return null;
-    }
-
-    private function convertChildNamespaces($call)
-    {
-        if (strpos($call, '\\') > 0) {
-            $subNames = explode('\\', $call);
-            $subName = array_shift($subNames);
-            foreach ($this->namespaces as $namespace) {
-                $compareStr = substr($namespace['use'], strlen($namespace['use']) - strlen($subName) - 1, strlen($namespace['use']));
-                if ($compareStr == '\\' . $subName) {
-                    $call = $namespace['use'] . '\\' . implode('\\', $subNames);
-                }
-            }
-        }
-        return $call;
     }
 
     private function parseImplementsCall($tokens, $index)
@@ -285,4 +207,81 @@ class PHPFileParser
         }
         return null;
     }
+
+    private function parseCatchCall($tokens, $index)
+    {
+        $call = '';
+        if ($tokens[$index][0] == T_CATCH) {
+            $index++;
+            do {
+                if (!is_array($tokens[$index])) {
+                    $tokens[$index][1] = $tokens[$index];
+                }
+//                if (strpos($tokens[$index][1], '$') !== false) {
+//                    break;
+//                }
+                if ($tokens[$index][1] != '(') {
+                    $call .= $tokens[$index][1];
+                }
+                $index++;
+            } while ($tokens[$index] == '(' || in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
+            return trim($call);
+        }
+        return null;
+    }
+
+    private function convertAddedNamespace($call)
+    {
+        if ((strpos($call, '\\') === 0 && $this->namespace == null)
+            || (strpos($call, '\\') === false && $this->namespace != null)
+        ) {
+            if ($this->namespace == null) {
+                $call = substr($call, 1, strlen($call));
+            }
+            return $call;
+        }
+        return $call;
+    }
+
+    private function convertNamespaceAliases($call)
+    {
+        foreach ($this->namespaces as $namespace) {
+            if ($namespace['alias'] != '' && strpos($call, $namespace['alias']) === 0) {
+                $call = str_replace($namespace['alias'], $namespace['use'], $call);
+            }
+        }
+        return $call;
+    }
+
+    private function convertCallToNamespace($call)
+    {
+        if (strpos($call, '\\') === false) {
+            foreach ($this->namespaces as $namespace) {
+                if ($namespace['alias'] == '') {
+                    $length = strlen($namespace['use']) - strlen($call) - 1;
+                    if ($length > 0) {
+                        if (strpos($namespace['use'], '\\' . $call, $length) == $length) {
+                            $call = $namespace['use'];
+                        }
+                    }
+                }
+            }
+        }
+        return $call;
+    }
+
+//    private function convertChildNamespaces($call)
+//    {
+//        if (strpos($call, '\\') > 0) {
+//            $subNames = explode('\\', $call);
+//            $subName = array_shift($subNames);
+//            foreach ($this->namespaces as $namespace) {
+//                $compareStr = substr($namespace['use'], strlen($namespace['use']) - strlen($subName) - 1, strlen($namespace['use']));
+//                if ($compareStr == '\\' . $subName) {
+//                    $call = $namespace['use'] . '\\' . implode('\\', $subNames);
+//                }
+//            }
+//        }
+//        return $call;
+//    }
 }

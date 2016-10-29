@@ -105,33 +105,33 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     {
         $mockSplFileInfo = $this->createFileMock('<?php
         namespace my\\test;
-        
+
         use my\\aliasNamespace as aliasNamespace;
         use my\\test2\\Example2 as aliasClass;
         use my\\test2\\MyException as aliasException;
-        
+
         function myFunction1(){
             $var1 = new Example1();
             $var2 = new my\\test2\\Example1();
             $var3 = new aliasNamespace\\Example1();
             $var4 = new aliasClass();
-            
+
             $var5 = Example1::class;
             $var6 = my\\test2\\Example1::class;
             $var7 = aliasNamespace\\Example1::class;
             $var8 = aliasClass::class;
-           
-            try{}catch(Exception $e){}
+
+            try{}catch(      Exception $e){}
             try{}catch(MyException $e){}
             try{}catch(my\\test2\\MyException $e){}
             try{}catch(aliasNamespace\\MyException $e){}
             try{}catch(aliasException $e){}
-            
+
             //$comment = new CommentedCall();
             //$comment2 = new \\my\\test2\\CommentedCall();
             //$comment3 = new aliasNamespace\\CommentedCall();
             //$comment4 = new aliasClass();
-            
+
             /**
             $comment = new CommentedCall();
             $comment2 = new \\my\\test2\\CommentedCall();
@@ -139,8 +139,12 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             $comment4 = new aliasClass();
             */
         }
-        
-        class TestExample extends Example1{}
+
+        class TestExample extends Example1{
+            public function myFunction2(){
+                $var1 = self::class;
+            }
+        }
         class TestExample2 extends my\\test2\\Example1{}
         class TestExample3 extends aliasNamespace\\Example1{}
         class TestExample4 extends aliasClass{}

@@ -2,4 +2,5 @@ composer.lock
 composer.phar
 coverage.txt
 /vendor
-/.idea/
+/.idea
+/coverage
