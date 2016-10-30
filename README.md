@@ -55,3 +55,6 @@ foreach($finder as $file){
     $parser->getNamespace();        // returns null or the current namespace
 }
 ```
+
+TODO:
+* remove elements like array, int, string e.t.c. from used classes list.
