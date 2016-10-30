@@ -29,6 +29,11 @@ class PHPFileParser
     private $calls;
 
     /**
+     * @var string[]
+     */
+    private $annotationCalls;
+
+    /**
      * @var string
      */
     private $namespace;
@@ -38,6 +43,7 @@ class PHPFileParser
         $this->file = $file;
         $this->namespaces = [];
         $this->calls = [];
+        $this->annotationCalls = [];
     }
 
     public function parse()
@@ -48,12 +54,25 @@ class PHPFileParser
         $this->parseNamespace($tokens);
         $this->parseNamespaces($tokens);
         $this->parseUsedClasses($tokens);
-        //TODO parse annotation declarations
+        $this->parseAnnotations($tokens);
     }
 
     public function getCalls()
     {
         return $this->calls;
+    }
+
+    public function getAllUsedNamespaces(){
+        $used = $this->calls;
+        $used = array_merge($used,$this->annotationCalls);
+
+        return array_values(array_intersect_key($used,array_unique(array_map(function($item){
+            return strtolower($item);
+        },$used))));
+    }
+
+    public function getAnnotationCalls(){
+        return $this->annotationCalls;
     }
 
     public function getNamespaces()
@@ -66,6 +85,29 @@ class PHPFileParser
         return $this->namespace;
     }
 
+    private function parseAnnotations($tokens){
+        $this->annotationCalls = [];
+        foreach($tokens as $index => $value){
+            if($value[0] == T_COMMENT||$value[0] == T_DOC_COMMENT){
+                preg_match_all('/(@var|@param|@return)\s+?(\$?[\w\\\\]*)\s+?([\w\\\\]*)/', $value[1], $result);
+
+                if(count($result) > 2){
+                    for($i = 0;$i< count($result[2]); $i++){
+                        $call = $result[2][$i];
+                        if(substr($result[2][$i],0,1) == '$'){
+                            $call = $result[3][$i];
+                        }
+                        $call = $this->convertAddedNamespace($call);
+                        $call = $this->convertNamespaceAliases($call);
+                        $call = $this->convertCallToNamespace($call);
+
+                        $this->annotationCalls[] = $call;
+                    }
+                }
+            }
+        }
+    }
+
     private function parseUsedClasses($tokens)
     {
         $this->calls = [];
@@ -75,34 +117,35 @@ class PHPFileParser
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseStaticCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseExtendsCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseImplementsCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
             } else if ($call = $this->parseCatchCall($tokens, $index)) {
                 $call = $this->convertAddedNamespace($call);
                 $call = $this->convertNamespaceAliases($call);
                 $call = $this->convertCallToNamespace($call);
-                //$call = $this->convertChildNamespaces($call);
                 $this->calls[] = $call;
+            } else if($calls = $this->parseFunctionCall($tokens,$index)){
+                for($i=0;$i<count($calls);$i++){
+                    $calls[$i] = $this->convertAddedNamespace($calls[$i]);
+                    $calls[$i] = $this->convertNamespaceAliases($calls[$i]);
+                    $calls[$i] = $this->convertCallToNamespace($calls[$i]);
+                }
+                $this->calls = array_merge($this->calls,$calls);
             }
-            //TODO: parse function arguments
         }
     }
 
@@ -136,9 +179,11 @@ class PHPFileParser
                         $current = 'alias';
                         $index++;
                     }
-                    $var[$current] .= $tokens[$index][1];
+                    if(!in_array($tokens[$index][0], [T_COMMENT,T_DOC_COMMENT])) {
+                        $var[$current] .= $tokens[$index][1];
+                    }
                     $index++;
-                } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR, T_AS]));
+                } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR, T_AS,T_COMMENT,T_DOC_COMMENT]));
 
                 $this->namespaces[] = array_map(function ($item) {
                     return trim($item);
@@ -153,9 +198,11 @@ class PHPFileParser
         if ($tokens[$index][0] == T_IMPLEMENTS) {
             $index++;
             do {
-                $call .= $tokens[$index][1];
+                if(!in_array($tokens[$index][0], [T_COMMENT,T_DOC_COMMENT])){
+                    $call .= $tokens[$index][1];
+                }
                 $index++;
-            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
+            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR,T_COMMENT,T_DOC_COMMENT]));
             return trim($call);
         }
         return null;
@@ -167,9 +214,11 @@ class PHPFileParser
         if ($tokens[$index][0] == T_EXTENDS) {
             $index++;
             do {
-                $call .= $tokens[$index][1];
+                if(!in_array($tokens[$index][0], [T_COMMENT,T_DOC_COMMENT])){
+                    $call .= $tokens[$index][1];
+                }
                 $index++;
-            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
+            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR,T_COMMENT,T_DOC_COMMENT]));
             return trim($call);
         }
 
@@ -200,9 +249,11 @@ class PHPFileParser
         if ($tokens[$index][0] == T_NEW) {
             $index++;
             do {
-                $call .= $tokens[$index][1];
+                if(!in_array($tokens[$index][0], [T_COMMENT,T_DOC_COMMENT])){
+                    $call .= $tokens[$index][1];
+                }
                 $index++;
-            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
+            } while (in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR,T_COMMENT,T_DOC_COMMENT]));
             return trim($call);
         }
         return null;
@@ -217,15 +268,41 @@ class PHPFileParser
                 if (!is_array($tokens[$index])) {
                     $tokens[$index][1] = $tokens[$index];
                 }
-//                if (strpos($tokens[$index][1], '$') !== false) {
-//                    break;
-//                }
                 if ($tokens[$index][1] != '(') {
-                    $call .= $tokens[$index][1];
+                    if(!in_array($tokens[$index][0], [T_COMMENT,T_DOC_COMMENT])){
+                        $call .= $tokens[$index][1];
+                    }
                 }
                 $index++;
-            } while ($tokens[$index] == '(' || in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR]));
+            } while ($tokens[$index] == '(' || in_array($tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR,T_DOC_COMMENT,T_COMMENT]));
             return trim($call);
+        }
+        return null;
+    }
+
+    private function parseFunctionCall($tokens, $index){
+        if($tokens[$index][0] == T_FUNCTION){
+            $index += 1;
+            $started = false;
+            $lastString = '';
+            $calls = [];
+            do{
+                if($started){
+                    if($tokens[$index][0] == T_STRING||$tokens[$index][0] == T_NS_SEPARATOR){
+                        $lastString .= $tokens[$index][1];
+                    }else if($tokens[$index][0] == T_VARIABLE && $lastString != ''){
+                        $calls[] = trim($lastString);
+                        $lastString = '';
+                    }else if($tokens[$index] == ','){
+                        $lastString = '';
+                    }
+                }
+                if($tokens[$index] == '('){
+                    $started = true;
+                }
+                $index++;
+            }while(in_array($tokens[$index],['(',',','=','[',']'])||in_array($tokens[$index][0],[T_NS_SEPARATOR,T_ARRAY,T_WHITESPACE,T_STRING,T_VARIABLE,T_WHILE,T_COMMENT,T_DOC_COMMENT]));
+            return $calls;
         }
         return null;
     }
@@ -246,8 +323,8 @@ class PHPFileParser
     private function convertNamespaceAliases($call)
     {
         foreach ($this->namespaces as $namespace) {
-            if ($namespace['alias'] != '' && strpos($call, $namespace['alias']) === 0) {
-                $call = str_replace($namespace['alias'], $namespace['use'], $call);
+            if ($namespace['alias'] != '' && strpos(strtolower($call), strtolower($namespace['alias'])) === 0) {
+                $call = str_ireplace($namespace['alias'], $namespace['use'], $call);
             }
         }
         return $call;
@@ -269,19 +346,4 @@ class PHPFileParser
         }
         return $call;
     }
-
-//    private function convertChildNamespaces($call)
-//    {
-//        if (strpos($call, '\\') > 0) {
-//            $subNames = explode('\\', $call);
-//            $subName = array_shift($subNames);
-//            foreach ($this->namespaces as $namespace) {
-//                $compareStr = substr($namespace['use'], strlen($namespace['use']) - strlen($subName) - 1, strlen($namespace['use']));
-//                if ($compareStr == '\\' . $subName) {
-//                    $call = $namespace['use'] . '\\' . implode('\\', $subNames);
-//                }
-//            }
-//        }
-//        return $call;
-//    }
 }

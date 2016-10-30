@@ -9,7 +9,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "PHP_Package_Parser\\": "src/"
+      "PHPFileParser\\": "src/"
     }
   },
   "require": {
