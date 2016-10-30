@@ -1,4 +1,11 @@
 <?php
+use PHPFileParser\Parser\AnnotationParser;
+use PHPFileParser\Parser\ArgumentParser;
+use PHPFileParser\Parser\CatchParser;
+use PHPFileParser\Parser\ExtendsParser;
+use PHPFileParser\Parser\ImplementsParser;
+use PHPFileParser\Parser\NewParser;
+use PHPFileParser\Parser\StaticParser;
 use PHPFileParser\PHPFileParser;
 
 use Symfony\Component\Finder\SplFileInfo;
@@ -17,7 +24,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_emptyFile()
     {
         $mockSplFileInfo = $this->createFileMock('');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -78,7 +85,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
         }
         class TestExample5 implements /*comment*/ myInterface{}
         ');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -170,7 +177,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             }
         }
         ');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -258,7 +265,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             }
         }
         ');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -295,7 +302,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_namespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace test;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -310,7 +317,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_complexNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace My\\FullNamespace\\test;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -325,7 +332,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_useNamespaces()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\test;use My\\FullNamespace2\\test;use My\\AliasNamespace\\test as aliasTest;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -343,7 +350,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new()
     {
         $mockSplFileInfo = $this->createFileMock('<?php $test = new Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -358,7 +365,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; $test = new Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -373,7 +380,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static()
     {
         $mockSplFileInfo = $this->createFileMock('<?php $var = Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -388,7 +395,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; $var = Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -403,7 +410,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends()
     {
         $mockSplFileInfo = $this->createFileMock('<?php class test extends BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -418,7 +425,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; class test extends BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -433,7 +440,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements()
     {
         $mockSplFileInfo = $this->createFileMock('<?php class test implements TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -448,7 +455,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; class test implements TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -463,7 +470,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch()
     {
         $mockSplFileInfo = $this->createFileMock('<?php try{}catch(MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -478,7 +485,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; try{}catch(MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -493,7 +500,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_function()
     {
         $mockSplFileInfo = $this->createFileMock('<?php function myFunction(MyFunctionArgument1 $arg1, MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -508,7 +515,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_function_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; function myFunction(MyFunctionArgument1 $arg1, MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -542,7 +549,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
                 /* @var $var4 aliasClass*/
                 $var4 = null;
             }');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -555,8 +562,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             ,'Example1'
             ,'my\\FullNamespace\\Example1'
             ,'my\\aliasNamespace\\Example1'
-            ,'my\\test2\\Example2'], $parser->getAnnotationCalls());
-        $this->assertSame([], $parser->getCalls());
+            ,'my\\test2\\Example2'], $parser->getCalls());
         $this->assertSame([['use' => 'my\\aliasNamespace','alias' => 'aliasNamespace'],['use' => 'my\\test2\\Example2','alias' => 'aliasClass']], $parser->getNamespaces());
     }
 
@@ -569,7 +575,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withFullNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php $test = new \\My\\FullNamespace\\Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -584,7 +590,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withFullNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; $test = new My\\FullNamespace\\Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -599,7 +605,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withFullNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php $var = \\My\\FullNamespace\\Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -614,7 +620,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withFullNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; $var = My\\FullNamespace\\Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -629,7 +635,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withFullNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php class test extends \\My\\FullNamespace\\BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -644,7 +650,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withFullNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; class test extends My\\FullNamespace\\BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -659,7 +665,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withFullNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php class test implements \\My\\FullNamespace\\TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -674,7 +680,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withFullNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; class test implements My\\FullNamespace\\TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -689,7 +695,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withFullNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php try{}catch(\\My\\FullNamespace\\MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -704,7 +710,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withFullNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; try{}catch(My\\FullNamespace\\MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -719,7 +725,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_function_withFullNamespaces()
     {
         $mockSplFileInfo = $this->createFileMock('<?php function myFunction(\\my\\FullNamespace\\MyFunctionArgument1 $arg1, \\my\\FullNamespace\\MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -734,7 +740,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_function_withFullNamespaces_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; function myFunction(my\\FullNamespace\\MyFunctionArgument1 $arg1, my\\FullNamespace\\MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -752,7 +758,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\Test; $test = new Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -767,7 +773,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\Test; $test = new Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -782,7 +788,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\Test; $var = Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -797,7 +803,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\Test; $var = Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -812,7 +818,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\BaseTest; class test extends BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -827,7 +833,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\BaseTest; class test extends BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -842,7 +848,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\TestInterface; class test implements TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -857,7 +863,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\TestInterface; class test implements TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -872,7 +878,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\MyException; try{}catch(MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -887,7 +893,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedNamespace_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\MyException; try{}catch(MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -906,7 +912,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace\\MyFunctionArgument2;
 
             function myFunction(MyFunctionArgument1 $arg1, MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -928,7 +934,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace\\MyFunctionArgument2;
 
             function myFunction(MyFunctionArgument1 $arg1, MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -947,7 +953,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\Test as myTest; $test = new myTest();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -962,7 +968,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\Test as myTest; $test = new myTest();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -977,7 +983,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\Test as myTest; $var = myTest::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -992,7 +998,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\Test as myTest; $var = myTest::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1007,7 +1013,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\BaseTest as MyTest; class test extends MyTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1022,7 +1028,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\BaseTest as MyTest; class test extends MyTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1037,7 +1043,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\TestInterface as MyInterface; class test implements MyInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1052,7 +1058,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\TestInterface as MyInterface; class test implements MyInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1067,7 +1073,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace\\MyException as testException; try{}catch(testException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1082,7 +1088,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace\\MyException as testException; try{}catch(testException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1101,7 +1107,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace\\MyFunctionArgument2 as Arg2;
 
             function myFunction(array $arg3 = [],Arg1 $arg1, Arg2 $arg2)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1123,7 +1129,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace\\MyFunctionArgument2 as Arg2;
 
             function myFunction(array $arg3 = null,Arg1 $arg1, Arg2 $arg2)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1142,7 +1148,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedNamespaceAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace as myTest; $test = new myTest\Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1157,7 +1163,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_new_withUsedNamespaceAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace as myTest; $test = new myTest\Test();');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1172,7 +1178,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedNamespaceAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace as myTest; $var = myTest\\Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1187,7 +1193,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_static_withUsedNamespaceAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace as myTest; $var = myTest\\Test::class;');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1202,7 +1208,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedNamespaceAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace as MyTest; class test extends MyTest\\BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1217,7 +1223,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_extends_withUsedNamespaceAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace as MyTest; class test extends MyTest\\BaseTest{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1232,7 +1238,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedNamespaceAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace as MyTest; class test implements MyTest\\TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1247,7 +1253,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_implements_withUsedNamespaceAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace as MyTest; class test implements MyTest\\TestInterface{}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1262,7 +1268,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedNamespaceAlias()
     {
         $mockSplFileInfo = $this->createFileMock('<?php use My\\FullNamespace as testException; try{}catch(testException\\MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1277,7 +1283,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
     public function parse_catch_withUsedNamespaceAlias_withNamespace()
     {
         $mockSplFileInfo = $this->createFileMock('<?php namespace my\\Test; use My\\FullNamespace as testException; try{}catch(testException\\MyException $e){}');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1295,7 +1301,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace as Args;
 
             function myFunction(Args\\MyFunctionArgument1 $arg1, Args\\MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
@@ -1315,13 +1321,27 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             use my\\FullNamespace as Args;
 
             function myFunction(Args\\MyFunctionArgument1 $arg1, Args\\MyFunctionArgument2 $arg2, array $arg3)');
-        $parser = new PHPFileParser($mockSplFileInfo);
+        $parser = $this->initializeParser($mockSplFileInfo);
 
         $parser->parse();
 
         $this->assertSame('my\\Test', $parser->getNamespace());
         $this->assertSame(['my\\FullNamespace\\MyFunctionArgument1','my\\FullNamespace\\MyFunctionArgument2'], $parser->getCalls());
         $this->assertSame([['use' => 'my\\FullNamespace','alias' => 'Args']], $parser->getNamespaces());
+    }
+
+    private function initializeParser(SplFileInfo $mockSplFileInfo){
+        $parser = new PHPFileParser($mockSplFileInfo);
+
+        $parser->addParser(new NewParser());
+        $parser->addParser(new StaticParser());
+        $parser->addParser(new ExtendsParser());
+        $parser->addParser(new ImplementsParser());
+        $parser->addParser(new CatchParser());
+        $parser->addParser(new ArgumentParser());
+        $parser->addParser(new AnnotationParser());
+
+        return $parser;
     }
 
     private function createFileMock($content)
