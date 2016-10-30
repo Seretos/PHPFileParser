@@ -61,7 +61,7 @@ class PHPFileParser
 
         $count = count($this->calls);
         for($i=0;$i<$count;$i++){
-            if(in_array($this->calls[$i],['int','integer','array','boolean','bool','mixed','double','object','resource','void','self','null','parent','static','callable','true','false'])
+            if(in_array($this->calls[$i],['int','integer','array','boolean','bool','mixed','double','object','resource','void','self','null','parent','static','callable','true','false','string'])
             ||$this->calls[$i] == ''){
                 unset($this->calls[$i]);
             }
