@@ -36,6 +36,7 @@ class ArgumentParser extends BaseParser implements ParseInterface
                         $call = $this->convertAddedNamespace($call);
                         $call = $this->convertNamespaceAliases($call);
                         $call = $this->convertCallToNamespace($call);
+                        $call = $this->clearNamespace($call);
 
                         $calls[] = $call;
                         $lastString = '';

@@ -185,6 +185,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
                                         , \\my\\test2\\Example1 $arg3 = null
                                         , aliasNamespace\\Example1 $arg4
                                         , aliasClass $arg5){
+                  throw new \\LogicException();
             }
         }
         ');
@@ -213,7 +214,8 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             , 'Example1'
             , 'my\\test2\\Example1'
             , 'my\\aliasNamespace\\Example1'
-            , 'my\\test2\\Example2'], $parser->getCalls());
+            , 'my\\test2\\Example2'
+            ,'LogicException'], $parser->getCalls());
         $this->assertSame([['use' => 'my\\aliasNamespace', 'alias' => 'aliasNamespace']
             , ['use' => 'my\\test2\\Example2', 'alias' => 'aliasClass']
             , ['use' => 'my\\test2\\MyException', 'alias' => 'aliasException']], $parser->getNamespaces());
@@ -273,6 +275,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
                                         , my\\test2\\Example1 $arg3 = null
                                         , aliasNamespace\\Example1 $arg4
                                         , aliasClass $arg5){
+                    throw new \\LogicException();
             }
         }
         ');
@@ -301,7 +304,8 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             , 'Example1'
             , 'my\\test2\\Example1'
             , 'my\\aliasNamespace\\Example1'
-            , 'my\\test2\\Example2'], $parser->getCalls());
+            , 'my\\test2\\Example2'
+        , 'LogicException'], $parser->getCalls());
         $this->assertSame([['use' => 'my\\aliasNamespace', 'alias' => 'aliasNamespace']
             , ['use' => 'my\\test2\\Example2', 'alias' => 'aliasClass']
             , ['use' => 'my\\test2\\MyException', 'alias' => 'aliasException']], $parser->getNamespaces());

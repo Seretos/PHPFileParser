@@ -13,6 +13,7 @@
     <testsuites>
         <testsuite name="PHPFileParser">
             <file>tests/PHPFileParserTest.php</file>
+            <file>tests/PHPPackageParserTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

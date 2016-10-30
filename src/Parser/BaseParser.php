@@ -73,4 +73,11 @@ abstract class BaseParser
         }
         return $call;
     }
+
+    protected function clearNamespace($call){
+        if(strpos($call,'\\') === 0){
+            return substr($call,1,strlen($call));
+        }
+        return $call;
+    }
 }

@@ -4,9 +4,6 @@ PHPFileParser
 This library can be used to parse an PHP file and response all used namespaces
 in this file.
 
-WARNING: this library does not use the autoloader. They can't tell, if an class
-used in the local namespace, or in the global namespace.
-
 Installation
 ------------
 
@@ -22,6 +19,24 @@ Add this repository to your composer.json as below:
 
 Usage
 -----
+
+PHPPackageParser:
+
+```php
+use PHPFileParser\PHPPackageParser;
+
+$parser = new PHPPackageParser();
+
+$classMap = ['my\\FullNamespace\\class' => __DIR__.'/path/to/file.php'];
+
+$calls = $parser->parse($classMap);     //returns all used classes which not part of the classMap
+
+foreach($calls as $class => $source){
+    print_r('class ' .$class . ' is used in ' . $source);
+}
+```
+
+PHPFileParser:
 
 ```php
 use Symfony\Component\Finder\Finder;

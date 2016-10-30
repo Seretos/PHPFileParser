@@ -22,7 +22,7 @@ class AnnotationParser extends BaseParser implements ParseInterface
     public function parse(array $tokens, $index)
     {
         if($tokens[$index][0] == T_COMMENT||$tokens[$index][0] == T_DOC_COMMENT){
-            preg_match_all('/(@var|@param|@return)\s+?(\$?[\w\\\\]*)\s+?([\w\\\\]*)/', $tokens[$index][1], $result);
+            preg_match_all('/(@var|@param|@return|@throws)\s+?(\$?[\w\\\\]*)\s+?([\w\\\\]*)/', $tokens[$index][1], $result);
 
             if(count($result) > 2){
                 $calls = [];
@@ -34,6 +34,7 @@ class AnnotationParser extends BaseParser implements ParseInterface
                     $call = $this->convertAddedNamespace($call);
                     $call = $this->convertNamespaceAliases($call);
                     $call = $this->convertCallToNamespace($call);
+                    $call = $this->clearNamespace($call);
                     $calls[] = $call;
                 }
                 return $calls;
