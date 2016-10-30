@@ -58,6 +58,14 @@ class PHPFileParser
         $this->parseNamespace($tokens);
         $this->parseNamespaces($tokens);
         $this->parseUsedClasses($tokens);
+
+        $count = count($this->calls);
+        for($i=0;$i<$count;$i++){
+            if(in_array($this->calls[$i],['int','integer','array','boolean','bool','mixed','double','object','resource','void','self','null'])){
+                unset($this->calls[$i]);
+            }
+        }
+        $this->calls = array_values($this->calls);
     }
 
     public function getCalls()

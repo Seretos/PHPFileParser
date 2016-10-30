@@ -4,6 +4,7 @@ use PHPFileParser\Parser\ArgumentParser;
 use PHPFileParser\Parser\CatchParser;
 use PHPFileParser\Parser\ExtendsParser;
 use PHPFileParser\Parser\ImplementsParser;
+use PHPFileParser\Parser\InstanceOfParser;
 use PHPFileParser\Parser\NewParser;
 use PHPFileParser\Parser\StaticParser;
 use PHPFileParser\PHPFileParser;
@@ -84,6 +85,12 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             }
         }
         class TestExample5 implements /*comment*/ myInterface{}
+        
+        if($test instanceof Example1){
+        }else if($test instanceof \\my\\test2\\Example1){
+        }else if($test instanceof aliasNamespace\\Example1){
+        }else if($test instanceof /*comment*/ aliasClass){
+        }
         ');
         $parser = $this->initializeParser($mockSplFileInfo);
 
@@ -111,7 +118,11 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             , 'my\\test2\\Example1'
             , 'my\\aliasnamespace\\Example1'
             , 'my\\test2\\example2'
-        ,'myInterface'], $parser->getCalls());
+            ,'myInterface'
+            , 'Example1'
+            , 'my\\test2\\Example1'
+            , 'my\\aliasnamespace\\Example1'
+            , 'my\\test2\\example2'], $parser->getCalls());
         $this->assertSame(['example1'
             ,'my\\test2\Example1'
             ,'my\\aliasnamespace\\Example1'
@@ -548,6 +559,10 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
                 $var3 = null;
                 /* @var $var4 aliasClass*/
                 $var4 = null;
+                /* @var $var5 array */
+                $var5 = [];
+                /* @var $var6 mixed */
+                $var6 = [];
             }');
         $parser = $this->initializeParser($mockSplFileInfo);
 
@@ -1339,6 +1354,7 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
         $parser->addParser(new ImplementsParser());
         $parser->addParser(new CatchParser());
         $parser->addParser(new ArgumentParser());
+        $parser->addParser(new InstanceOfParser());
         $parser->addParser(new AnnotationParser());
 
         return $parser;

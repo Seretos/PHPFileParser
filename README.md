@@ -46,7 +46,8 @@ foreach($finder as $file){
     $parser->addParser(new ImplementsParser()); // parse implemented class interfaces
     $parser->addParser(new CatchParser());      // parse the catched exception classes
     $parser->addParser(new ArgumentParser());   // parse the type hints in function arguments
-    $parser->addParser(new AnnotationParser);   // parse the annotation type declarations
+    $parser->addParser(new AnnotationParser()); // parse the annotation type declarations
+    $parser->addParser(new InstanceOfParser()); // parse instanceof operations
     
     $parser->parse();               // parse the php file
     $parser->getCalls();            // get an array of used classes (with fully qualified namespace)
