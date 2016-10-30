@@ -15,7 +15,7 @@ Add this repository to your composer.json as below:
 {
     "require-dev": {
         ...
-        "seretos/php-file-parser": "1.0.x-dev"
+        "seretos/php-file-parser": "0.2.x-dev"
     }
 }
 ```
@@ -56,3 +56,6 @@ foreach($finder as $file){
     $parser->getNamespace();        // returns null or the current namespace
 }
 ```
+
+TODO:
+* remove elements like array, int, string e.t.c. from used classes list.
