@@ -13,16 +13,6 @@ Installation
 Add this repository to your composer.json as below:
 ```php
 {
-    ...
-    "repositories":[
-        ...
-        ,
-        {
-            "type": "git",
-            "url": "https://github.com/Seretos/PHPFileParser"
-        }
-    ],
-    ...
     "require-dev": {
         ...
         "seretos/php-file-parser": "1.0.x-dev"
