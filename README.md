@@ -12,7 +12,7 @@ Add this repository to your composer.json as below:
 {
     "require-dev": {
         ...
-        "seretos/php-file-parser": "0.2.x-dev"
+        "seretos/php-file-parser": "0.3.x-dev"
     }
 }
 ```
