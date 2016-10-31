@@ -72,6 +72,7 @@ class PHPPackageParser
                     ,'false'
                     ,'string'
                     ,'numeric'
+                    ,'number'
                     ,'float'
                     ,'DOMXPath'
                     ,'DOMText'
@@ -103,7 +104,26 @@ class PHPPackageParser
                     ,'Throwable'
                     ,'RecursiveIteratorIterator'
                     ,'RuntimeException'
-                    ,'ReflectionParameter'])
+                    ,'ReflectionParameter'
+                ,'ReflectionObject'
+                ,'Exception'
+                ,'ArrayObject'
+                ,'Reflector'
+                ,'XMLWriter'
+                ,'OutOfBonesException'
+                ,'RecursiveDirectoryIterator'
+                ,'AppendIterator'
+                ,'SoapClient'
+                ,'BadMethodCallException'
+                ,'UnexpectedValueException'
+                ,'DateInterval'
+                ,'DateTimeInterface'
+                ,'DateTime'
+                ,'SplFixedArray'
+                ,'stdClass'
+                ,'Serializable'
+                ,'FilesystemIterator'
+                ,'Error'])
                 ||$class == ''){
                 unset($calls[$class]);
             }
