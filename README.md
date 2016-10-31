@@ -24,8 +24,9 @@ PHPPackageParser:
 
 ```php
 use PHPFileParser\PHPPackageParser;
+use PHPFileParser\Factory;
 
-$parser = new PHPPackageParser();
+$parser = new PHPPackageParser(new Factory());
 
 $classMap = ['my\\FullNamespace\\class' => __DIR__.'/path/to/file.php'];
 
