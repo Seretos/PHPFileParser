@@ -51,6 +51,64 @@ class PHPPackageParser
             }
         }
 
+        foreach($calls as $class => $sources){
+            if(in_array($class,[
+                    'int'
+                    ,'integer'
+                    ,'array'
+                    ,'boolean'
+                    ,'bool'
+                    ,'mixed'
+                    ,'double'
+                    ,'object'
+                    ,'resource'
+                    ,'void'
+                    ,'self'
+                    ,'null'
+                    ,'parent'
+                    ,'static'
+                    ,'callable'
+                    ,'true'
+                    ,'false'
+                    ,'string'
+                    ,'numeric'
+                    ,'float'
+                    ,'DOMXPath'
+                    ,'DOMText'
+                    ,'DOMNodeList'
+                    ,'DOMNode'
+                    ,'DOMDocument'
+                    ,'DOMElement'
+                    ,'DOMCharacterData'
+                    ,'ReflectionFunction'
+                    ,'__PHP_Incomplete_Class'
+                    ,'ErrorException'
+                    ,'Closure'
+                    ,'Phar'
+                    ,'RecursiveIterator'
+                    ,'RecursiveFilterIterator'
+                    ,'FilterIterator'
+                    ,'InvalidArgumentException'
+                    ,'ReflectionMethod'
+                    ,'ReflectionClass'
+                    ,'ReflectionProperty'
+                    ,'Iterator'
+                    ,'LogicException'
+                    ,'SplObjectStorage'
+                    ,'IteratorAggregate'
+                    ,'ReflectionException'
+                    ,'Countable'
+                    ,'Traversable'
+                    ,'ArrayAccess'
+                    ,'Throwable'
+                    ,'RecursiveIteratorIterator'
+                    ,'RuntimeException'
+                    ,'ReflectionParameter'])
+                ||$class == ''){
+                unset($calls[$class]);
+            }
+        }
+
         return $calls;
     }
 
@@ -62,7 +120,7 @@ class PHPPackageParser
 
         $localNames = [];
         foreach($classMap as $mapClass => $file){
-            if($mapClass != $class && strpos(strtolower($mapClass),strtolower($namespace))===0){
+            if($mapClass != $class && $namespace != '' && strpos(strtolower($mapClass),strtolower($namespace))===0){
                 $name = str_replace($namespace.'\\','',$mapClass);
                 if(strpos($name,'\\')===false){
                     $localNames[$name] = $mapClass;

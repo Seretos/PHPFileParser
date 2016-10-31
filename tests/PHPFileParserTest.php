@@ -581,7 +581,9 @@ class PHPFileParserTest extends PHPUnit_Framework_TestCase
             ,'Example1'
             ,'my\\FullNamespace\\Example1'
             ,'my\\aliasNamespace\\Example1'
-            ,'my\\test2\\Example2'], $parser->getCalls());
+            ,'my\\test2\\Example2'
+            ,'array'
+            ,'mixed'], $parser->getCalls());
         $this->assertSame([['use' => 'my\\aliasNamespace','alias' => 'aliasNamespace'],['use' => 'my\\test2\\Example2','alias' => 'aliasClass']], $parser->getNamespaces());
     }
 
