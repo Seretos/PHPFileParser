@@ -12,26 +12,27 @@ namespace PHPFileParser;
 class PHPPackageParser
 {
     private $factory;
+    private $parser;
 
-    public function __construct(Factory $factory)
+    public function __construct(Factory $factory, $parseAnnotations = true)
     {
         $this->factory = $factory;
+        $this->parser = $this->factory->createParser($parseAnnotations);
     }
 
-    public function parse(array $classMap, $parseAnnotations = true){
+    public function parse(array $classMap){
+        $finder = $this->factory->createFinder();
+        $finder->files();
+        $finder->in(array_map(function($item){return dirname($item);},$classMap));
         $calls = [];
 
-        foreach($classMap as $class => $filePath){
-            $finder = $this->factory->createFinder();
-            $finder->files();
+        foreach($classMap as $class => $filePath) {
             $finder->name(basename($filePath));
-            $finder->in(dirname($filePath));
             $files = $finder->getIterator();
-
             foreach($files as $file) {
-                $parser = $this->factory->createParser($file,$parseAnnotations);
-                $parser->parse();
-                $namespaces = $parser->getAllUsedNamespaces();
+                var_dump($file->getFilename());
+                $this->parser->parse($file);
+                $namespaces = $this->parser->getAllUsedNamespaces();
                 $localClasses = $this->getLocalClasses($class,$classMap);
                 foreach($namespaces as $call){
                     if(array_key_exists($call,$localClasses)){

@@ -14,11 +14,6 @@ use Symfony\Component\Finder\SplFileInfo;
 class PHPFileParser
 {
     /**
-     * @var SplFileInfo
-     */
-    private $file;
-
-    /**
      * @var array
      */
     private $namespaces;
@@ -38,11 +33,8 @@ class PHPFileParser
      */
     private $parsers;
 
-    public function __construct(SplFileInfo $file)
+    public function __construct()
     {
-        $this->file = $file;
-        $this->namespaces = [];
-        $this->calls = [];
         $this->parsers = [];
     }
 
@@ -50,9 +42,12 @@ class PHPFileParser
         $this->parsers[] = $parser;
     }
 
-    public function parse()
+    public function parse(SplFileInfo $file)
     {
-        $content = $this->file->getContents();
+        $this->namespaces = [];
+        $this->calls = [];
+
+        $content = $file->getContents();
         $tokens = token_get_all($content);
 
         $this->parseNamespace($tokens);

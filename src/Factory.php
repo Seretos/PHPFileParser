@@ -25,8 +25,8 @@ class Factory
         return new Finder();
     }
 
-    public function createParser($file,$parseAnnotations = true){
-        $parser = new PHPFileParser($file);
+    public function createParser($parseAnnotations = true){
+        $parser = new PHPFileParser();
 
         $parser->addParser(new NewParser());        // parse new operations like $var = new MyClass();
         $parser->addParser(new StaticParser());     // parse static operations like MyClass::class;
